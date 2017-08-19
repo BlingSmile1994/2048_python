@@ -302,5 +302,5 @@ class Frame(wx.Frame):
 
 if __name__ == "__main__":
     app = wx.App()
-    Frame(u"2048 v1.0.1 by heibanke")
+    Frame(u"2048 -- by BlingBling")
     app.MainLoop()
