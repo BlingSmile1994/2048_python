@@ -62,22 +62,24 @@ class Frame(wx.Frame):
     def onClose(self, event):
         self.saveScore()
         self.Destroy()
-
+    # 设置icon
     def setIcon(self):
         icon = wx.Icon("icon.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
 
+    # 读取ini中分数
     def loadScore(self):
         if os.path.exists("bestscore.ini"):
             ff = open("bestscore.ini")
             self.bstScore = int(ff.read())
             ff.close()
-
+    # 保存分数
     def saveScore(self):
         ff = open("bestscore.ini", "w")
         ff.write(str(self.bstScore))
         ff.close()
 
+    # 游戏初始化
     def initGame(self):
         self.bgFont = wx.Font(50, wx.SWISS, wx.NORMAL, wx.BOLD, faceName=u"Roboto")
         self.scFont = wx.Font(36, wx.SWISS, wx.NORMAL, wx.BOLD, faceName=u"Roboto")
@@ -89,13 +91,17 @@ class Frame(wx.Frame):
         self.loadScore()
         # 4*4棋盘
         self.data = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
-        count = 0
+        # 随机产生一个2或4块，后期可调概率
+        count = 1
         while count < 2:
             row = random.randint(0, len(self.data) - 1)
             col = random.randint(0, len(self.data[0]) - 1)
             if self.data[row][col] != 0:
                 continue
-            self.data[row][col] = 2 if random.randint(0, 1) else 4
+            if random.randint(0, 1):
+                self.data[row][col] = 2
+            else:
+                self.data[row][col] = 4
             count += 1
 
     def initBuffer(self):
@@ -189,6 +195,7 @@ class Frame(wx.Frame):
             self.drawScore(dc)
         self.drawTiles(dc)
 
+    # 键盘事件处理
     def onKeyDown(self, event):
         keyCode = event.GetKeyCode()
         if keyCode == wx.WXK_UP:
@@ -228,6 +235,7 @@ class Frame(wx.Frame):
         oldData = copy.deepcopy(self.data)
 
         for col in range(numCols):
+            # 处理每列，数据保存在cvl
             cvl = []
             for row in range(numRows):
                 if self.data[row][col] != 0:
@@ -235,11 +243,13 @@ class Frame(wx.Frame):
 
             if len(cvl) >= 2:
                 score += self.update(cvl, up)
+            # 判断每列还剩多少空格，并判断方向选择插入或添加0
             for i in range(numRows - len(cvl)):
                 if up:
                     cvl.append(0)
                 else:
                     cvl.insert(0, 0)
+            # 将数据重新写入data
             for row in range(numRows):
                 self.data[row][col] = cvl[row]
         return oldData != self.data, score
@@ -255,6 +265,7 @@ class Frame(wx.Frame):
             return True
         return False
 
+    # 根据方向合并数值，即两个2合为4，并返回分数
     def update(self, vlist, direct):
         score = 0
         if direct:  # up or left
@@ -288,6 +299,7 @@ class Frame(wx.Frame):
                     self.bstScore = bstScore
                     self.drawAll()
 
+    # 游戏结束判断，即四个方向都无法移动
     def isGameOver(self):
         copyData = copy.deepcopy(self.data)
 
